@@ -1,0 +1,45 @@
+handler: src/generateToken/index.handler
+runtime: nodejs16.x
+name: Paya-IVR-generateToken-${self:provider.stage}
+iamRoleStatementsName: Paya-IVR-generateToken-${self:provider.stage}-role
+memorySize: 128
+timeout: 30
+package:
+  include: 
+    - 'generateToken/node_modules/**'
+  patterns: 
+    - 'generateToken/**'
+    - 'generateToken/node_modules/**'
+    - '!node_modules/**'
+events:
+  - http: 
+      method: GET
+      path: generate-token
+      integration: lambda
+      response:
+        headers:
+          Content-Type: "'application/json'"
+        template: $input.path("$")
+        statusCodes:
+          200:
+            pattern: '' # Default response method
+            template:
+              # Your script returns json, so match it here
+              application/json: $input.path("$.body")
+            headers:
+              Content-Type: "'application/json'"
+environment:
+  NODE_ENV: ${self:provider.stage}
+  NODE_API_KEY: ${env:NODE_API_KEY, "123123123"} 
+  NODE_API_PASS: ${env:NODE_API_PASS, "123123123"} 
+  # JWT setting
+  JWT_SECRET: ${env:JWT_SECRET, "secretKey"} 
+  JWT_TOKEN_EXPIRY_IN_MINS: ${env:JWT_TOKEN_EXPIRY_IN_MINS, "15"}
+  # This below env variables for MB ROR API access
+  MB_BILLING_PAYA_API_HOST: ${env:MB_BILLING_PAYA_API_HOST, "https://connect.staging.munibilling.com:443/api"}
+  MB_BILLING_PAYA_API_NAMESPACE: ${env:MB_BILLING_PAYA_API_NAMESPACE, "v1"}
+  MB_BILLING_PAYA_API_LIFE_TOKEN: ${env:MB_BILLING_PAYA_API_LIFE_TOKEN, "LkI1PKm0SAtdzyTssn622JoI08Tc5NpX0"}
+  # This below env variables for MB NODE paya adapter API access
+  MB_NODE_PAYA_API_HOST: ${env:MB_NODE_PAYA_API_HOST, "http://localhost:5431/api/service"}
+  MB_NODE_PAYA_API_NAMESPACE: ${env:MB_NODE_PAYA_API_NAMESPACE, "v1"}
+  MB_NODE_PAYA_API_LIFE_TOKEN: ${env:MB_NODE_PAYA_API_LIFE_TOKEN, "LkI1PKm0SAtdzyTssn622JoI08Tc5NpX0"}

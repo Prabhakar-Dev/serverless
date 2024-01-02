@@ -1,0 +1,59 @@
+service: PayaMBPortalIVRLambdas
+variablesResolutionMode: 20210326
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-bundle
+  - serverless-iam-roles-per-function
+  - serverless-offline
+
+package:
+  individually: true
+  excludeDevDependencies: false
+
+provider:
+  endpointType: REGIONAL
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - sqs:getQueueUrl
+        - sqs:sendMessage
+        - ses:SendEmail
+        - ses:SendRawEmail
+        - ec2:describeInstances
+      Resource: "*"
+  lambdaHashingVersion: 20201221
+  name: aws
+  region: ${opt:region, 'us-west-2'}
+  runtime: nodejs16.x
+  stage: ${opt:stage, 'offline'}
+  vpc:
+    securityGroupIds:
+      "Fn::Split":
+        - ","
+        - ${env:SECURITY_GROUP_IDS, "#{SECURITY_GROUP_IDS}"}
+    subnetIds:
+      "Fn::Split":
+        - ","
+        - ${env:PRIVATE_SUBNET_IDS, "#{PRIVATE_SUBNET_IDS}"}
+
+custom:
+  funcsPerStage: # Custom function definitions to deploy different functions to different envinronments/stages
+    base: &base
+      status: ${file(src/status/config.yml)}
+      authorizer: ${file(src/authorizer/config.yml)}
+      generateToken: ${file(src/generateToken/config.yml)}
+      merchant: ${file(src/merchant/config.yml)}
+      account: ${file(src/account/config.yml)}
+      convenienceFee: ${file(src/convenienceFee/config.yml)}
+      saveTransaction: ${file(src/saveTransaction/config.yml)}
+    offline: &offline
+      <<: *base
+    UAT: &UAT
+      <<: *base
+    Production: &Production
+      <<: *base
+
+functions: ${self:custom.funcsPerStage.${opt:stage, self:provider.stage}}

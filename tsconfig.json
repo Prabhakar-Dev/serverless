@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "module": "ES2020",
+    "moduleResolution": "Node",
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "baseUrl": "./src/",
+    "rootDir": "./src/",
+    "preserveConstEnums": true,
+    "strictNullChecks": true,
+    "esModuleInterop": true,
+    "target": "ES2020",
+    "downlevelIteration": true,
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "./node_modules",
+    "./node_modules/*",
+    "**/types.d.ts",
+    "src/**/node_modules/*"
+  ]
+}
+
+
+// 9975478781
