@@ -1,7 +1,7 @@
 handler: src/saveTransaction/index.handler
 runtime: nodejs16.x
-name: Paya-IVR-status-${self:provider.stage}
-iamRoleStatementsName: Paya-IVR-status-${self:provider.stage}-role
+name: Paya-IVR-saveTransaction-${self:provider.stage}
+iamRoleStatementsName: Paya-IVR-saveTransaction-${self:provider.stage}-role
 memorySize: 128
 timeout: 30
 package:
