@@ -1,3 +1,4 @@
+import { IcreateRemoteChanges } from "saveTransaction/types";
 import { CONSTANTS } from "./constants";
 import axios, { AxiosInstance } from 'axios'
 
@@ -58,12 +59,7 @@ export default class MuniBiilingService {
     return data;
   }
 
-  async getCustomersDetails(id: any) {
-    const { data } = await this.muniAxiosInstance.get(`${CONSTANTS.MB_API_ENDPOINTS.CUSTOMER.BASEURL}/${id}`);
-    return data;
-  }
-
-  async createNewRemoteCharges(charge: any) {
+  async createNewRemoteCharges(charge: IcreateRemoteChanges) {
     const { data } = await this.muniAxiosInstance.post(CONSTANTS.MB_API_ENDPOINTS.REMOTE_CHARGES.BASEURL, charge);
     return data;
   }

@@ -1,7 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import { CONSTANTS } from '../common/constants'
 import { getLogger } from 'common/logger';
-import { APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 const logger = getLogger(__filename);
 
@@ -12,7 +12,7 @@ const API_KEY = process.env.NODE_API_KEY;
 const API_PASS = process.env.NODE_API_PASS;
 
 export const handler = async (
-  event: any,
+  event: APIGatewayEvent,
 ): Promise<APIGatewayProxyResult> => {
   try {
     logger.info('generate-token', {

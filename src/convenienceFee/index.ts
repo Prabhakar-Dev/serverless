@@ -67,7 +67,7 @@ async function getConvenienceFee(amount: string, accountNumber: string) {
       step: 'successfully fetched convenience fee',
       convenienceFees
     })
-    const response: IConvenienceFeeResponse =  await getConvenienceFeeMapping(convenienceFees);
+    const response: Record<string, IConvenienceFeeResponse> =  await getConvenienceFeeMapping(convenienceFees);
     logger.info('convenience-fee:', {
       step: 'created final response',
       mapResponse: response

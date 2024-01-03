@@ -4,13 +4,13 @@ import {
 import { getLogger } from '../common/logger';
 import MuniBiilingService from '../common/muniBillingService';
 import { CONSTANTS } from '../common/constants'
-import { CustomAPIGatewayProxyEvent, IBody, IHeaders, IcreateRemoteChanges } from './types';
+import { IRecord } from '../common/types'
+import { CustomAPIGatewayProxyEvent, IHeaders, IProcessTransaction, IcreateRemoteChanges } from './types';
 import axios from 'axios';
 
 const logger = getLogger(__filename);
 
 // Environment Variables!
-const MB_ROR_API_HOST = `${process.env.MB_BILLING_PAYA_API_HOST}/${process.env.MB_BILLING_PAYA_API_NAMESPACE}`;
 const MB_NODE_PAYA_ADAPTER_HOST = `${process.env.MB_NODE_PAYA_API_HOST}/${process.env.MB_NODE_PAYA_API_NAMESPACE}`;
 const MB_NODE_PAYA_API_LIFE_TOKEN = process.env.MB_NODE_PAYA_API_LIFE_TOKEN;
 
@@ -102,9 +102,6 @@ export const handler = async (
       })
     }
 
-    console.log(pconResponseForAmount);
-    console.log(pconResponseForFee);
-    
     // Check for errors in the responses
     if (pconResponseForAmount && pconResponseForAmount.errors.length !== 0) {
       logger.info('save-transaction', {
@@ -152,7 +149,7 @@ export const handler = async (
   }
 };
 
-async function processTransaction(headers: IHeaders, transactionDetails: any) {
+async function processTransaction(headers: IHeaders, transactionDetails: IProcessTransaction) {
   logger.info('save-transaction', {
     step: 'process the transaction',
     params: {
@@ -245,7 +242,7 @@ async function processTransaction(headers: IHeaders, transactionDetails: any) {
 
 async function saveTransactionOnMunibilling(
   pconEncryptedHeaders: string,
-  newTransaction: any,
+  newTransaction: IRecord,
 ) {
   logger.info('save-transaction', {
     step: 'save transaction in Node paya adapter'
@@ -272,7 +269,7 @@ async function saveTransactionOnMunibilling(
   return id;
 }
 
-async function getHeaderEncryptedForPCON(headers: any) {
+async function getHeaderEncryptedForPCON(headers: IHeaders) {
   logger.info('save-transaction', {
     step: 'initiate the header encryption process',
     headers

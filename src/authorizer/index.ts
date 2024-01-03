@@ -2,7 +2,7 @@ import * as jwt from 'jsonwebtoken';
 import { CONSTANTS } from '../common/constants'
 import { getLogger } from 'common/logger';
 import { CustomAPIGatewayProxyEvent } from './types';
-import { APIGatewaySimpleAuthorizerResult } from 'aws-lambda';
+import { APIGatewayAuthorizerResult } from 'aws-lambda';
 
 const logger = getLogger(__filename);
 
@@ -18,10 +18,8 @@ const verifyToken = async (token: string): Promise<Record<string, number | numbe
   }
 };
 
-export const handler = async (event: CustomAPIGatewayProxyEvent): Promise<APIGatewaySimpleAuthorizerResult> => {
+export const handler = async (event: CustomAPIGatewayProxyEvent) => {
   try {
-    console.log('EVENT DATA', event)
-
     // return { isAuthorized: true };
     logger.info('authorizer', {
       step: 'init',
@@ -29,7 +27,6 @@ export const handler = async (event: CustomAPIGatewayProxyEvent): Promise<APIGat
     })
 
     const authorizationHeader = event.authorizationToken;
-    console.log('authorizationHeader:: ', authorizationHeader);
     
     if (!authorizationHeader) {
       logger.error('authorizer', {
@@ -54,29 +51,30 @@ export const handler = async (event: CustomAPIGatewayProxyEvent): Promise<APIGat
       step: 'end',
       decodedToken
     });
-    return generatePolicy(decodedToken.iat, 'Allow', event.methodArn);
+    return generatePolicy(`${decodedToken.iat}`, 'Allow', event.methodArn);
   } catch (error) {
     logger.error('authorizer', {
       step: 'error',
       error: error.message
     })
-    return { statusCode: 401, error: error.message, ...generatePolicy(0,'',''), };
+    return { statusCode: 401, error: error.message, ...generatePolicy('Unauthorize','',''), };
   }
 };
 
 
 
-const generatePolicy = (principalId: any , effect: string, resource: string) => {
-  const authResponse: any = {
+const generatePolicy = (principalId: string , effect: string, resource: string) => {
+  const authResponse: APIGatewayAuthorizerResult = {
       principalId,
       policyDocument: {
-          Statement: [
-              {
-                  Action: 'execute-api:Invoke',
-                  Effect: effect,
-                  Resource: resource,
-              },
-          ],
+        Statement: [
+          {
+            Action: 'execute-api:Invoke',
+            Effect: effect,
+            Resource: resource,
+          },
+        ],
+        Version: ''
       },
   };
   return authResponse;

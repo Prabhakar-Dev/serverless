@@ -1,4 +1,5 @@
 import {
+  APIGatewayEvent,
   APIGatewayProxyResult,
 } from 'aws-lambda';
 import { getLogger } from '../common/logger';
@@ -16,7 +17,7 @@ const NODE_VERSION = process.versions.node;
 
 
 export const handler = async (
-  event: any,
+  event: APIGatewayEvent,
 ): Promise<APIGatewayProxyResult> => {
   try {
     logger.info('status', {

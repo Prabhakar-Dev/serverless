@@ -31,7 +31,7 @@ export const handler = async (
      
     const apiGatewayProxyResult =  {
       statusCode: 200,
-        body: JSON.stringify(result),
+      body: JSON.stringify(result),
     };
 
     logger.info('merchant', {
