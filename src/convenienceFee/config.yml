@@ -19,7 +19,7 @@ events:
       authorizer:
           name: authorizer
           resultTtlInSeconds: 0
-          identitySource: method.request.header.Authorization
+          identitySource: $request.header.Authorization
           type: token
       response:
         headers:
