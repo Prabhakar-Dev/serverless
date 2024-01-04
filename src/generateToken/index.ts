@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import { CONSTANTS } from '../common/constants'
+import { getErrorResponse } from '../common/errorFormatting'
 import { getLogger } from 'common/logger';
 import { APIGatewayEvent, APIGatewayProxyResult } from 'aws-lambda';
 
@@ -21,11 +22,6 @@ export const handler = async (
     });
 
     const { headers } = event;
-    console.log(headers.apiKey);
-    console.log(headers.apiPass);
-    console.log(API_KEY);
-    console.log(API_PASS);
-
     if(!headers || !headers.apiKey || !headers.apiPass) {
       logger.error('generate-token', {
         step: 'error',
@@ -69,11 +65,8 @@ export const handler = async (
   } catch (error) {
     logger.error('generate-token', { 
       step: 'error',
-      error: error.message
+      error: JSON.stringify(error)
     });
-    return {
-      statusCode: error.status || CONSTANTS.STATUS_CODE.INTERNAL_SERVER_ERROR,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return getErrorResponse(error);
   }
 };

@@ -23,7 +23,7 @@ export default class MuniBiilingService {
     const queryParams = new URLSearchParams();
 
     if (ivrCode) {
-      queryParams.append('ivr_code', ivrCode);
+      queryParams.append(CONSTANTS.MB_API_ENDPOINTS.COMPANIES.QUERY_PARAMS.IVR_CODE, ivrCode);
     }
     const url = `${baseUrl}?${queryParams.toString()}`;
     const { data } = await this.muniAxiosInstance.get(url);
@@ -38,8 +38,8 @@ export default class MuniBiilingService {
   async getConvenienceFee(base_amount: string, account_number: string) {
     const baseUrl = CONSTANTS.MB_API_ENDPOINTS.CONVENIENCE_FEE.BASEURL;
     const queryParams = new URLSearchParams();
-    queryParams.append('base_amount', base_amount);
-    queryParams.append('account_number', account_number);
+    queryParams.append(CONSTANTS.MB_API_ENDPOINTS.CONVENIENCE_FEE.BASE_AMOUNT, base_amount);
+    queryParams.append(CONSTANTS.MB_API_ENDPOINTS.CONVENIENCE_FEE.ACCOUNT_NUMBER, account_number);
 
     const url = `${baseUrl}?${queryParams.toString()}`;
     const { data } = await this.muniAxiosInstance.get(url);
@@ -51,12 +51,12 @@ export default class MuniBiilingService {
     const queryParams = new URLSearchParams();
 
     if (account_number) {
-      queryParams.append('account_number', account_number);
+      queryParams.append(CONSTANTS.MB_API_ENDPOINTS.CUSTOMER.ACCOUNT_NUMBER, account_number);
     }
 
     const url = `${baseUrl}?${queryParams.toString()}`;
     const { data } = await this.muniAxiosInstance.get(url);
-    return data;
+        return data;
   }
 
   async createNewRemoteCharges(charge: IcreateRemoteChanges) {

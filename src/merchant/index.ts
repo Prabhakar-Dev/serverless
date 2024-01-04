@@ -4,6 +4,7 @@ import {
 import { getLogger } from '../common/logger';
 import MuniBiilingService from '../common/muniBillingService';
 import { CONSTANTS } from '../common/constants'
+import { getErrorResponse } from '../common/errorFormatting'
 import { CustomAPIGatewayProxyEvent, IMerchant, IMerchantResponse } from './types';
 import {
   getMerchantMapping,
@@ -42,49 +43,39 @@ export const handler = async (
   } catch (error) {
     logger.error('merchant', {
       step: 'error',
-      error: error.message
+      error: JSON.stringify(error),
     })
-    return {
-      statusCode: error.status || CONSTANTS.STATUS_CODE.INTERNAL_SERVER_ERROR,
-      body: JSON.stringify({ error: error.message }),
-    };
+
+    return getErrorResponse(error);
   }
 };
 
 async function getMerchantDetails(merchantCode: string) {
-  try {
-    logger.info('merchant', {
-      step: 'initiate to fetch merchant details',
-      params: { merchantCode }
-    })
-    const service = new MuniBiilingService()
-    const [merchant]: [IMerchant] = await service.findMerchantByIvrCode(merchantCode);
-    logger.info('merchant', {
-      step: 'fetched merchant details by merchant code',
-      merchant
-    })
-    const response: IMerchantResponse =  await getMerchantMapping(merchant, merchantCode);
-    logger.info('merchant', {
-      step: 'Created final response',
-      mapResponse: response
-    })
+  logger.info('merchant', {
+    step: 'initiate to fetch merchant details',
+    params: { merchantCode }
+  })
+  const service = new MuniBiilingService()
+  const [merchant]: [IMerchant] = await service.findMerchantByIvrCode(merchantCode);
+  logger.info('merchant', {
+    step: 'fetched merchant details by merchant code',
+    merchant
+  })
+  const response: IMerchantResponse =  await getMerchantMapping(merchant, merchantCode);
+  logger.info('merchant', {
+    step: 'Created final response',
+    mapResponse: response
+  })
 
-    const finalResponse =  {
-      status: CONSTANTS.STATUS_CODE.SUCCESS,
-      message: CONSTANTS.OK,
-      data: response
-    };
-    logger.info('merchant', {
-      step: 'end',
-      finalResponse
-    })
+  const finalResponse =  {
+    status: CONSTANTS.STATUS_CODE.SUCCESS,
+    message: CONSTANTS.OK,
+    data: response
+  };
+  logger.info('merchant', {
+    step: 'end',
+    finalResponse
+  })
 
-    return finalResponse;
-  } catch (error) {
-    logger.error('merchant', {
-      step: 'error',
-      error: error.message,
-    })
-    throw new Error(error.message);
-  }
+  return finalResponse;
 }

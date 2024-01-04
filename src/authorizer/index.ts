@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import { CONSTANTS } from '../common/constants'
+import { getErrorResponse } from '../common/errorFormatting'
 import { getLogger } from 'common/logger';
 import { CustomAPIGatewayProxyEvent } from './types';
 import { APIGatewayAuthorizerResult } from 'aws-lambda';
@@ -20,7 +21,6 @@ const verifyToken = async (token: string): Promise<Record<string, number | numbe
 
 export const handler = async (event: CustomAPIGatewayProxyEvent) => {
   try {
-    // return { isAuthorized: true };
     logger.info('authorizer', {
       step: 'init',
       event: JSON.stringify(event),
@@ -55,13 +55,11 @@ export const handler = async (event: CustomAPIGatewayProxyEvent) => {
   } catch (error) {
     logger.error('authorizer', {
       step: 'error',
-      error: error.message
+      error: JSON.stringify(error),
     })
-    return { statusCode: 401, error: error.message, ...generatePolicy('Unauthorize','',''), };
+    return getErrorResponse(error);
   }
 };
-
-
 
 const generatePolicy = (principalId: string , effect: string, resource: string) => {
   const authResponse: APIGatewayAuthorizerResult = {

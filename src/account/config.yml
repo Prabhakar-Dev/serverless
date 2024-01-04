@@ -24,7 +24,7 @@ events:
       response:
         headers:
           Content-Type: "'application/json'"
-        template: $input.path("$")
+        template: $input.path("$.body")
         statusCodes:
           200:
             pattern: '' # Default response method
