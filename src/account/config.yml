@@ -16,11 +16,11 @@ events:
       method: GET
       path: account/{accountNumber}
       integration: lambda
-      authorizer:
-          name: authorizer
-          resultTtlInSeconds: 0
-          identitySource: method.request.header.Authorization
-          type: token
+      # authorizer:
+      #     name: authorizer
+      #     resultTtlInSeconds: 0
+      #     identitySource: method.request.header.Authorization
+      #     type: token
       response:
         headers:
           Content-Type: "'application/json'"
