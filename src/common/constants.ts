@@ -1,6 +1,7 @@
 export const CONSTANTS = Object.freeze({
     OK: 'OK',
     HEALTHY: 'Healthy',
+    UNHEALTHY: 'Un-healthy',
     UNAUTHORIZED: 'Unauthorized',
     AUTHORIZATION_TOKEN_INVALID: 'The authorization token is invalid',
     INTERNAL_SERVER_ERROR: 'Internal Server Error',

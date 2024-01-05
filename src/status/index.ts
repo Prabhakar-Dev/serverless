@@ -56,31 +56,32 @@ async function statusOfDependencies() {
   logger.info('status', {
     step: 'initiate the check all dependencies',
   });
-  const [
-    { data: munibillingRorApiServices },
-    { data: munibillingNodePayaAdapter },
-  ] = await Promise.all([
-    axios.get(`${MB_ROR_API_HOST}/${CONSTANTS.STATUS.MB_ROR_ENDPOINT_FOR_STATUS}`, {
-      headers: {
-        'x-api-token': `${MB_BILLING_PAYA_API_LIFE_TOKEN}`
-      }
-    }),
-    axios.get(`${MB_NODE_PAYA_ADAPTER_HOST}/${CONSTANTS.STATUS.MB_NODE_PAYA_ADAPTOR_ENDPOINT_FOR_STATUS}`),
+
+  const munibillingRorApiServicesPromise = axios.get(`${MB_ROR_API_HOST}/${CONSTANTS.STATUS.MB_ROR_ENDPOINT_FOR_STATUS}`, {
+    headers: {
+      'x-api-token': `${MB_BILLING_PAYA_API_LIFE_TOKEN}`
+    }
+  });
+
+  const munibillingNodePayaAdapterPromise = axios.get(`${MB_NODE_PAYA_ADAPTER_HOST}/${CONSTANTS.STATUS.MB_NODE_PAYA_ADAPTOR_ENDPOINT_FOR_STATUS}`);
+
+  const [munibillingRorApiServicesResult, munibillingNodePayaAdapterResult] = await Promise.allSettled([
+    munibillingRorApiServicesPromise,
+    munibillingNodePayaAdapterPromise,
   ]);
-  
-  if (!munibillingRorApiServices) {
+
+  if (munibillingRorApiServicesResult.status === 'rejected') {
     logger.error('status', {
       step: 'error',
       error: CONSTANTS.STATUS.MB_ROR_API_SERVICE_DOWN
     });
-    throw new Error(CONSTANTS.STATUS.MB_ROR_API_SERVICE_DOWN);
   }
-  if (!munibillingNodePayaAdapter) {
+
+  if (munibillingNodePayaAdapterResult.status === 'rejected') {
     logger.error('status', {
       step: 'error',
       error: CONSTANTS.STATUS.MB_NODE_PAYA_ADAPTER_SERVICE_DOWN
     });
-    throw new Error(CONSTANTS.STATUS.MB_NODE_PAYA_ADAPTER_SERVICE_DOWN);
   }
 
   const response =  {
@@ -90,8 +91,8 @@ async function statusOfDependencies() {
       app_name: 'AWS lamda',
       api_version: LAMBDA_VERSION,
       node_version: NODE_VERSION,
-      munibilling_ror_api_services: CONSTANTS.HEALTHY,
-      munibilling_node_paya_adapter: CONSTANTS.HEALTHY,
+      munibilling_ror_api_services: munibillingRorApiServicesResult.status === 'fulfilled' ? CONSTANTS.HEALTHY : CONSTANTS.UNHEALTHY,
+      munibilling_node_paya_adapter: munibillingNodePayaAdapterResult.status === 'fulfilled' ? CONSTANTS.HEALTHY : CONSTANTS.UNHEALTHY,
     },
   };
   logger.info('status', { step: 'end of check status of dependencies', response });
