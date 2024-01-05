@@ -31,7 +31,7 @@ export const handler = async (
         step: 'error',
         error: CONSTANTS.BAD_GATEWAY
       })
-      new Error(CONSTANTS.BAD_GATEWAY)
+      throw new Error(CONSTANTS.BAD_GATEWAY)
      }
 
      const {
@@ -231,7 +231,7 @@ async function processTransaction(headers: IHeaders, transactionDetails: IProces
       errors: [],
     },
   );
-
+  
   logger.info('save-transaction', {
     step: 'end process transaction',
     response

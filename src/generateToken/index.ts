@@ -1,7 +1,7 @@
 import * as jwt from 'jsonwebtoken';
 import { CONSTANTS } from '../common/constants'
 import { getErrorResponse } from '../common/errorFormatting'
-import { getLogger } from 'common/logger';
+import { getLogger } from '../common/logger';
 import { APIGatewayEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 const logger = getLogger(__filename);

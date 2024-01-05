@@ -25,7 +25,7 @@ export const handler = async (
       step: 'init',
       event,
     });
-
+    
     const result = await statusOfDependencies();
 
     logger.info('status', { 
@@ -67,7 +67,7 @@ async function statusOfDependencies() {
     }),
     axios.get(`${MB_NODE_PAYA_ADAPTER_HOST}/${CONSTANTS.STATUS.MB_NODE_PAYA_ADAPTOR_ENDPOINT_FOR_STATUS}`),
   ]);
-
+  
   if (!munibillingRorApiServices) {
     logger.error('status', {
       step: 'error',

@@ -5,8 +5,8 @@ export const getErrorResponse = (error: AxiosError | any) => {
     let response;
 
    if (error.isAxiosError) {
-        const { statusText: message, status, data = null } = error.response || {};
-        const { name, code, errors, ...restData } = data;
+        const { statusText: message, status, data } = error.response || {};
+        const { name, code, errors, ...restData } = data || {};
         response = {
             statusCode: status || CONSTANTS.STATUS_CODE.INTERNAL_SERVER_ERROR,
             body: JSON.stringify({

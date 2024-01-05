@@ -5,7 +5,7 @@
     "**/*.ts",
     "../common/logger.ts",
     "../common/mongo/*.ts"
-  ],
+],
   "exclude": [
     "node_modules",
     "./node_modules",
