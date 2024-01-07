@@ -1,9 +1,7 @@
-import { APIGatewayAuthorizerResult, APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayAuthorizerResult } from 'aws-lambda';
 import jwt from 'jsonwebtoken';
 import { handler } from './index'
 import { CustomAPIGatewayProxyEvent } from './types';
-import { CONSTANTS } from '../common/constants';
-
 
 describe('Authorizer Handler',() => {
 

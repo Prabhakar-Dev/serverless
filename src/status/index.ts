@@ -5,7 +5,6 @@ import {
 import { getLogger } from '../common/logger';
 import axios from 'axios';
 import { CONSTANTS } from '../common/constants'
-import { getErrorResponse } from '../common/errorFormatting'
 
 const logger = getLogger(__filename);
 
@@ -20,36 +19,28 @@ const NODE_VERSION = process.versions.node;
 export const handler = async (
   event: APIGatewayEvent,
 ): Promise<APIGatewayProxyResult> => {
-  try {
-    logger.info('status', {
-      step: 'init',
-      event,
-    });
-    
-    const result = await statusOfDependencies();
+  logger.info('status', {
+    step: 'init',
+    event,
+  });
+  
+  const result = await statusOfDependencies();
 
-    logger.info('status', { 
-      result
-    });
+  logger.info('status', { 
+    result
+  });
 
-    const apiGatewayProxyResult = {
-      statusCode: 200,
-      body: JSON.stringify(result),
-    };
+  const apiGatewayProxyResult = {
+    statusCode: 200,
+    body: JSON.stringify(result),
+  };
 
-    logger.info('status', { 
-      step: 'end',
-      apiGatewayProxyResult
-    });
+  logger.info('status', { 
+    step: 'end',
+    apiGatewayProxyResult
+  });
 
-    return apiGatewayProxyResult
-  } catch (error) {
-    logger.error('status', { 
-      step: 'error',
-      error: JSON.stringify(error),
-    });
-    return getErrorResponse(error);
-  }
+  return apiGatewayProxyResult
 };
 
 async function statusOfDependencies() {

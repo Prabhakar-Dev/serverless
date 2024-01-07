@@ -1,6 +1,5 @@
 import * as jwt from 'jsonwebtoken';
 import { CONSTANTS } from '../common/constants'
-import { getErrorResponse } from '../common/errorFormatting'
 import { getLogger } from '../common/logger';
 import { CustomAPIGatewayProxyEvent } from './types';
 import { APIGatewayAuthorizerResult } from 'aws-lambda';
@@ -11,12 +10,8 @@ const logger = getLogger(__filename);
 const JWT_SECRET_KEY = process.env.JWT_SECRET || '';
 
 const verifyToken = async (token: string): Promise<Record<string, number | string | unknown>> => {
-  try {
     const decoded = await jwt.verify(token, JWT_SECRET_KEY) as Record<string, number | string | unknown>;
     return decoded;
-  } catch (error) {
-    throw new Error(CONSTANTS.AUTHORIZATION_TOKEN_INVALID);
-  }
 };
 
 export const handler = async (event: CustomAPIGatewayProxyEvent) => {
