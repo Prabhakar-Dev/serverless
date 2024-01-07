@@ -1,4 +1,4 @@
-import { APIGatewayProxyResult } from 'aws-lambda';
+import { APIGatewayAuthorizerResult, APIGatewayProxyResult } from 'aws-lambda';
 import jwt from 'jsonwebtoken';
 import { handler } from './index'
 import { CustomAPIGatewayProxyEvent } from './types';
@@ -18,12 +18,14 @@ describe('Authorizer Handler',() => {
     
         const result = await handler({
             methodArn: '132132123',
+            requestId: '1234567890',
             authorizationToken: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-        } as unknown as CustomAPIGatewayProxyEvent) as APIGatewayProxyResult as any;
+        } as unknown as CustomAPIGatewayProxyEvent) as APIGatewayAuthorizerResult;
         console.log(result);
         
       
         expect(result.principalId).toBeTruthy();
+        expect(result.policyDocument.Statement[0].Effect).toBe('Allow');
     });
     test('should return 500 status code and expected response when token is invalid', async () => {
         const mockedDecodedValue = false;
@@ -31,19 +33,22 @@ describe('Authorizer Handler',() => {
         verifyMock.mockResolvedValueOnce(mockedDecodedValue);
     
         const result = await handler({
+            methodArn: '132132123',
+            requestId: '1234567890',
             authorizationToken: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c',
-        } as unknown as CustomAPIGatewayProxyEvent) as APIGatewayProxyResult;
-        console.log(result);
-        
-      
-        expect(result.statusCode).toBe(500);
-        expect(JSON.parse(result.body).message).toBe(CONSTANTS.AUTHORIZATION_TOKEN_INVALID);
+        } as unknown as CustomAPIGatewayProxyEvent) as APIGatewayAuthorizerResult;
+
+        expect(result.principalId).toBeTruthy();
+        expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 
     test('should return 500 status code and expected response when token is missing', async () => {
-        const result = await handler({} as unknown as CustomAPIGatewayProxyEvent) as APIGatewayProxyResult;
+        const result = await handler({
+            methodArn: '132132123',
+            requestId: '1234567890',
+        } as unknown as CustomAPIGatewayProxyEvent) as APIGatewayAuthorizerResult;
       
-        expect(result.statusCode).toBe(500);
-        expect(JSON.parse(result.body).message).toBe(CONSTANTS.AUTHENTICATION_TOKEN_MISSING);
+        expect(result.principalId).toBeTruthy();
+        expect(result.policyDocument.Statement[0].Effect).toBe('Deny');
     });
 });

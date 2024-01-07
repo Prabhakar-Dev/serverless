@@ -38,7 +38,7 @@ export const handler = async (
       throw new Error(CONSTANTS.GENERATE_TOKEN.INVALID_API_PASS)
     }
 
-    const accessToken = jwt.sign({ username: headers.apikey }, JWT_SECRET_KEY, {
+    const accessToken = jwt.sign({ username: headers.apiKey }, JWT_SECRET_KEY, {
       expiresIn: `${JWT_EXPIRY || CONSTANTS.JWT.DEFAULT_EXPIRY}m`,
     });
 

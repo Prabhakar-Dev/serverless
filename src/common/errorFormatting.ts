@@ -2,9 +2,9 @@ import { AxiosError } from "axios";
 import { CONSTANTS } from "./constants";
 
 export const getErrorResponse = (error: AxiosError | any) => {
-    let response;
+        let response;
 
-   if (error.isAxiosError) {
+    if (error.isAxiosError) {
         const { statusText: message, status, data } = error.response || {};
         const { name, code, errors, ...restData } = data || {};
         response = {

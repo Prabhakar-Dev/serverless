@@ -57,7 +57,7 @@ export const handler = async (event: CustomAPIGatewayProxyEvent) => {
       step: 'error',
       error: JSON.stringify(error),
     })
-    return getErrorResponse(error);
+    return generatePolicy(`${event.requestId}`,'Deny', event.methodArn);
   }
 };
 
