@@ -55,10 +55,7 @@ describe('Account Handler',() => {
             }
         }
 
-      
         const result = await handler(event as CustomAPIGatewayProxyEvent);
-        console.log('result :: ', result);
-        
 
         expect(result.statusCode).toBe(200);
         expect(result.body).toContain(JSON.stringify({
