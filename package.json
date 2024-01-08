@@ -1,6 +1,6 @@
 {
   "name": "Paya.MuniBilling.IVR.Wrapper",
-  "version": "0.0.5-0",
+  "version": "0.0.6-0",
   "description": "Collection of Lambdas used by the MuniBilling IVR.",
   "scripts": {
     "build": "tsc --skipLibCheck",
