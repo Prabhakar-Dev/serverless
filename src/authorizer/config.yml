@@ -30,8 +30,8 @@ events:
               Content-Type: "'application/json'"
 environment:
   NODE_ENV: ${self:provider.stage}
-  NODE_API_KEY: ${env:NODE_API_KEY, "123123123"} 
-  NODE_API_PASS: ${env:NODE_API_PASS, "123123123"} 
+  NODE_API_KEY: ${env:NODE_API_KEY, "#{NODE_API_KEY}"} 
+  NODE_API_PASS: ${env:NODE_API_PASS, "#{NODE_API_PASS}"} 
   # JWT setting
   JWT_SECRET: ${env:JWT_SECRET, "secretKey"} 
   JWT_TOKEN_EXPIRY_IN_MINS: ${env:JWT_TOKEN_EXPIRY_IN_MINS, "15"}
