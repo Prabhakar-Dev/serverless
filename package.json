@@ -29,6 +29,7 @@
     "install:account": "cd src/account && npm i",
     "install:convenienceFee": "cd src/convenienceFee && npm i",
     "install:saveTransaction": "cd src/saveTransaction && npm i",
+    "install:authorizer": "cd src/authorizer && npm i",
     "postinstall": "run-s install:**",
     "sls:deploy": "sls deploy",
     "sls:package": "sls package",
