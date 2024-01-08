@@ -1,4 +1,4 @@
-service: PayaMuniBillingIVRWrapper
+service: PayaMBPortalIVRLambdas
 variablesResolutionMode: 20210326
 
 frameworkVersion: '3'
