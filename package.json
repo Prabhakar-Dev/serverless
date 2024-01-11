@@ -1,7 +1,7 @@
 {
-  "name": "paya.munibilling.ivr.lambdas",
-  "version": "0.0.61-0",
-  "description": "Collection of Lambdas used by the Citizen Portal IVR.",
+  "name": "Paya.MuniBilling.IVR.Wrapper",
+  "version": "0.0.14-0",
+  "description": "Collection of Lambdas used by the MuniBilling IVR.",
   "scripts": {
     "build": "tsc --skipLibCheck",
     "build:status": "tsc --skipLibCheck -p src/status",

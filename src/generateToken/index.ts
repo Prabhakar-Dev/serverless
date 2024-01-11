@@ -16,6 +16,7 @@ export const handler = async (
   event: APIGatewayEvent,
 ): Promise<APIGatewayProxyResult> => {
   try {
+
     logger.info('generate-token', {
       step: 'init',
       event,
