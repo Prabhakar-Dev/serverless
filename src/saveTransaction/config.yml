@@ -16,11 +16,11 @@ events:
       method: POST
       path: save-transaction
       integration: lambda
-      # authorizer:
-      #     name: authorizer
-      #     resultTtlInSeconds: 0
-      #     identitySource: method.request.header.Authorization
-      #     type: token
+      authorizer:
+          name: authorizer
+          resultTtlInSeconds: 0
+          identitySource: method.request.header.Authorization
+          type: token
       response:
         headers:
           Content-Type: "'application/json'"
@@ -35,16 +35,16 @@ events:
               Content-Type: "'application/json'"
 environment:
   NODE_ENV: ${self:provider.stage}
-  NODE_API_KEY: ${env:NODE_API_KEY, "123123123"} 
-  NODE_API_PASS: ${env:NODE_API_PASS, "123123123"} 
+  NODE_API_KEY: ${env:NODE_API_KEY, "#{NODE_API_KEY}"} 
+  NODE_API_PASS: ${env:NODE_API_PASS, "#{NODE_API_PASS}"} 
   # JWT setting
-  JWT_SECRET: ${env:JWT_SECRET, "secretKey"} 
-  JWT_TOKEN_EXPIRY_IN_MINS: ${env:JWT_TOKEN_EXPIRY_IN_MINS, "15"}
+  JWT_SECRET: ${env:JWT_SECRET, "#{JWT_SECRET}"} 
+  JWT_TOKEN_EXPIRY_IN_MINS: ${env:JWT_TOKEN_EXPIRY_IN_MINS, "#{JWT_TOKEN_EXPIRY_IN_MINS}"}
   # This below env variables for MB ROR API access
-  MB_BILLING_PAYA_API_HOST: ${env:MB_BILLING_PAYA_API_HOST, "https://connect.staging.munibilling.com:443/api"}
-  MB_BILLING_PAYA_API_NAMESPACE: ${env:MB_BILLING_PAYA_API_NAMESPACE, "v1"}
-  MB_BILLING_PAYA_API_LIFE_TOKEN: ${env:MB_BILLING_PAYA_API_LIFE_TOKEN, "LkI1PKm0SAtdzyTssn622JoI08Tc5NpX0"}
+  MB_BILLING_PAYA_API_HOST: ${env:MB_BILLING_PAYA_API_HOST, "#{MB_BILLING_PAYA_API_HOST}"}
+  MB_BILLING_PAYA_API_NAMESPACE: ${env:MB_BILLING_PAYA_API_NAMESPACE, "#{MB_BILLING_PAYA_API_NAMESPACE}"}
+  MB_BILLING_PAYA_API_LIFE_TOKEN: ${env:MB_BILLING_PAYA_API_LIFE_TOKEN, "#{MB_BILLING_PAYA_API_LIFE_TOKEN}"}
   # This below env variables for MB NODE paya adapter API access
-  MB_NODE_PAYA_API_HOST: ${env:MB_NODE_PAYA_API_HOST, "http://localhost:5431/api/service"}
-  MB_NODE_PAYA_API_NAMESPACE: ${env:MB_NODE_PAYA_API_NAMESPACE, "v1"}
-  MB_NODE_PAYA_API_LIFE_TOKEN: ${env:MB_NODE_PAYA_API_LIFE_TOKEN, "LkI1PKm0SAtdzyTssn622JoI08Tc5NpX0"}
+  MB_NODE_PAYA_API_HOST: ${env:MB_NODE_PAYA_API_HOST, "#{MB_NODE_PAYA_API_HOST}"}
+  MB_NODE_PAYA_API_NAMESPACE: ${env:MB_NODE_PAYA_API_NAMESPACE, "#{MB_NODE_PAYA_API_NAMESPACE}"}
+  MB_NODE_PAYA_API_LIFE_TOKEN: ${env:MB_NODE_PAYA_API_LIFE_TOKEN, "#{MB_NODE_PAYA_API_LIFE_TOKEN}"}

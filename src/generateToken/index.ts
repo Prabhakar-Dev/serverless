@@ -17,22 +17,11 @@ export const handler = async (
   try {
 
     logger.info('generate-token', {
-      step: 'preinit',
-      JWT_EXPIRY,
-    });
-
-
-    logger.info('generate-token', {
       step: 'init',
       event,
     });
 
     const { headers } = event;
-    console.log(headers.apiKey);
-    console.log(headers.apiPass);
-    console.log(API_KEY);
-    console.log(API_PASS);
-
     if(!headers || !headers.apiKey || !headers.apiPass) {
       logger.error('generate-token', {
         step: 'error',
