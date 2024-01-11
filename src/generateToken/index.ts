@@ -15,6 +15,13 @@ export const handler = async (
   event: any,
 ): Promise<APIGatewayProxyResult> => {
   try {
+
+    logger.info('generate-token', {
+      step: 'preinit',
+      JWT_EXPIRY,
+    });
+
+
     logger.info('generate-token', {
       step: 'init',
       event,
@@ -43,7 +50,7 @@ export const handler = async (
     }
 
     const accessToken = jwt.sign({ username: headers.apikey }, JWT_SECRET_KEY, {
-      expiresIn: `${JWT_EXPIRY || CONSTANTS.JWT.DEFAULT_EXPIRY}m`,
+      expiresIn: `${CONSTANTS.JWT.DEFAULT_EXPIRY}m`,
     });
 
     logger.info('generate-token', { 
