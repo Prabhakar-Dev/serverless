@@ -13,7 +13,7 @@ package:
     - '!node_modules/**'
 events:
   - http: 
-      method: GET
+      method: POST
       path: generate-token
       integration: lambda
       response:

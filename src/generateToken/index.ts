@@ -43,6 +43,8 @@ export const handler = async (
       expiresIn: `${JWT_EXPIRY || CONSTANTS.JWT.DEFAULT_EXPIRY}m`,
     });
 
+    const decoded = await jwt.verify(accessToken, JWT_SECRET_KEY) as jwt.JwtPayload;
+
     logger.info('generate-token', { 
       step: 'token generated successfully',
       accessToken
@@ -53,7 +55,7 @@ export const handler = async (
       body: JSON.stringify({
         status: CONSTANTS.STATUS_CODE.SUCCESS,
         message: CONSTANTS.OK,
-        data: { accessToken },
+        data: { accessToken, expiredAt: decoded.exp  },
       }),
     };
 

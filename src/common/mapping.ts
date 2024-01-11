@@ -51,10 +51,10 @@ export async function getCustomerMapping(customerDetails: ICustomerAccountDTO, a
       storedPayments: (opt) =>
         opt.mapFrom((src) => {
           return {
-            accountVaultId: src.recurring_payment.account_vault_id || '',
-            paymentMethod: src.recurring_payment.recurring_payment_method || '',
-            lastFourDigit: src.recurring_payment.last_four_digits || '',
-            accountHolderName: src.recurring_payment.account_name || '',
+            accountVaultId: src?.recurring_payment?.account_vault_id || '',
+            paymentMethod: src?.recurring_payment?.recurring_payment_method || '',
+            lastFourDigit: src?.recurring_payment?.last_four_digits || '',
+            accountHolderName: src?.recurring_payment?.account_name || '',
           };
         }),
     });
