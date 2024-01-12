@@ -13,13 +13,13 @@ package:
     - '!node_modules/**'
 events:
   - http: 
-      method: GET
+      method: POST
       path: generate-token
       integration: lambda
       response:
         headers:
           Content-Type: "'application/json'"
-        template: $input.path("$")
+        template: $input.path("$.body")
         statusCodes:
           200:
             pattern: '' # Default response method

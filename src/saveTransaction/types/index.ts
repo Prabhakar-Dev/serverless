@@ -33,3 +33,14 @@ export interface IcreateRemoteChanges {
   type_name?: string;
   status_name?: string;
 }
+
+export interface IProcessTransaction {
+  pcon_transaction_id: string;
+  customer_account_number: string;
+  company_muni_id: number;
+  amount: number;
+  trans_type: string;
+  customer_id: number;
+  reason_code_id: number;
+  uuid: string;
+} 

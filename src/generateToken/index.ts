@@ -1,7 +1,8 @@
 import * as jwt from 'jsonwebtoken';
 import { CONSTANTS } from '../common/constants'
-import { getLogger } from 'common/logger';
-import { APIGatewayProxyResult } from 'aws-lambda';
+import { getErrorResponse } from '../common/errorFormatting'
+import { getLogger } from '../common/logger';
+import { APIGatewayEvent, APIGatewayProxyResult } from 'aws-lambda';
 
 const logger = getLogger(__filename);
 
@@ -12,7 +13,7 @@ const API_KEY = process.env.NODE_API_KEY;
 const API_PASS = process.env.NODE_API_PASS;
 
 export const handler = async (
-  event: any,
+  event: APIGatewayEvent,
 ): Promise<APIGatewayProxyResult> => {
   try {
 
@@ -38,9 +39,11 @@ export const handler = async (
       throw new Error(CONSTANTS.GENERATE_TOKEN.INVALID_API_PASS)
     }
 
-    const accessToken = jwt.sign({ username: headers.apikey }, JWT_SECRET_KEY, {
-      expiresIn: `${CONSTANTS.JWT.DEFAULT_EXPIRY}m`,
+    const accessToken = jwt.sign({ username: headers.apiKey }, JWT_SECRET_KEY, {
+      expiresIn: `${JWT_EXPIRY || CONSTANTS.JWT.DEFAULT_EXPIRY}m`,
     });
+
+    const decoded = await jwt.verify(accessToken, JWT_SECRET_KEY) as jwt.JwtPayload;
 
     logger.info('generate-token', { 
       step: 'token generated successfully',
@@ -52,7 +55,7 @@ export const handler = async (
       body: JSON.stringify({
         status: CONSTANTS.STATUS_CODE.SUCCESS,
         message: CONSTANTS.OK,
-        data: { accessToken },
+        data: { accessToken, expiredAt: decoded.exp  },
       }),
     };
 
@@ -65,11 +68,8 @@ export const handler = async (
   } catch (error) {
     logger.error('generate-token', { 
       step: 'error',
-      error: error.message
+      error: JSON.stringify(error)
     });
-    return {
-      statusCode: error.status || CONSTANTS.STATUS_CODE.INTERNAL_SERVER_ERROR,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return getErrorResponse(error);
   }
 };

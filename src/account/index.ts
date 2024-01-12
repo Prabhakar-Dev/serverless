@@ -4,6 +4,7 @@ import {
 import { getLogger } from '../common/logger';
 import MuniBiilingService from '../common/muniBillingService';
 import { CONSTANTS } from '../common/constants'
+import { getErrorResponse } from '../common/errorFormatting'
 import { CustomAPIGatewayProxyEvent, ICustomer, ICustomerResponse } from './types';
 import {
   getCustomerMapping,
@@ -40,51 +41,41 @@ export const handler = async (
   } catch (error) {
     logger.error('account', {
       step: 'error',
-      error: error.message
+      error: JSON.stringify(error),
     })
-    return {
-      statusCode: error.status || CONSTANTS.STATUS_CODE.INTERNAL_SERVER_ERROR,
-      body: JSON.stringify({ error: error.message }),
-    };
+
+    return getErrorResponse(error);
   }
-};
+}
 
 async function getCustomersByAccountNumber(accountNumber: string) {
-  try {
-    logger.info('account', {
-      step: 'initiate to fetch customer account details',
-      accountNumber
-    })
+  logger.info('account', {
+    step: 'initiate to fetch customer account details',
+    accountNumber
+  })
 
-    const service = new MuniBiilingService()
-    const [customer]: [ICustomer] = await service.getCustomersByAccountNumber(accountNumber);
-    logger.info('account', {
-      step: 'fetched customer account details',
-      customer: JSON.stringify(customer),
-    })
+  const service = new MuniBiilingService()
+  const [customer]: [ICustomer] = await service.getCustomersByAccountNumber(accountNumber);
+  logger.info('account', {
+    step: 'fetched customer account details',
+    customer: JSON.stringify(customer),
+  })
+  
+  const response: ICustomerResponse =  await getCustomerMapping(customer, accountNumber);
+  logger.info('account', {
+    step: 'create final response',
+    mapResponse: response
+  })
 
-    const response: ICustomerResponse =  await getCustomerMapping(customer, accountNumber);
-    logger.info('account', {
-      step: 'create final response',
-      mapResponse: response
-    })
+  const finalResponse =  {
+    status: CONSTANTS.STATUS_CODE.SUCCESS,
+    message: CONSTANTS.OK,
+    data: response
+  };
+  logger.info('account: customer account details', {
+    step: 'end',
+    finalResponse
+  })
 
-    const finalResponse =  {
-      status: CONSTANTS.STATUS_CODE.SUCCESS,
-      message: CONSTANTS.OK,
-      data: response
-    };
-    logger.info('account: customer account details', {
-      step: 'end',
-      finalResponse
-    })
-
-    return finalResponse;
-  } catch (error) {
-    logger.error('account: customer account details', {
-      step: 'error',
-      error: error.message
-    })
-    throw new Error(error.message);
-  }
+  return finalResponse;
 }

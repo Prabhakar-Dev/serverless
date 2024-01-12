@@ -4,13 +4,14 @@ import {
 import { getLogger } from '../common/logger';
 import MuniBiilingService from '../common/muniBillingService';
 import { CONSTANTS } from '../common/constants'
-import { CustomAPIGatewayProxyEvent, IBody, IHeaders, IcreateRemoteChanges } from './types';
+import { getErrorResponse } from '../common/errorFormatting'
+import { IRecord } from '../common/types'
+import { CustomAPIGatewayProxyEvent, IHeaders, IProcessTransaction, IcreateRemoteChanges } from './types';
 import axios from 'axios';
 
 const logger = getLogger(__filename);
 
 // Environment Variables!
-const MB_ROR_API_HOST = `${process.env.MB_BILLING_PAYA_API_HOST}/${process.env.MB_BILLING_PAYA_API_NAMESPACE}`;
 const MB_NODE_PAYA_ADAPTER_HOST = `${process.env.MB_NODE_PAYA_API_HOST}/${process.env.MB_NODE_PAYA_API_NAMESPACE}`;
 const MB_NODE_PAYA_API_LIFE_TOKEN = process.env.MB_NODE_PAYA_API_LIFE_TOKEN;
 
@@ -30,7 +31,7 @@ export const handler = async (
         step: 'error',
         error: CONSTANTS.BAD_GATEWAY
       })
-      new Error(CONSTANTS.BAD_GATEWAY)
+      throw new Error(CONSTANTS.BAD_GATEWAY)
      }
 
      const {
@@ -102,17 +103,19 @@ export const handler = async (
       })
     }
 
-    console.log(pconResponseForAmount);
-    console.log(pconResponseForFee);
-    
     // Check for errors in the responses
     if (pconResponseForAmount && pconResponseForAmount.errors.length !== 0) {
       logger.info('save-transaction', {
         step: 'error',
-        error: new Error(`${CONSTANTS.SAVE_TRANSACTION_MESSAGES.PCON_AMOUNT_FAILED}`),
+        error: CONSTANTS.SAVE_TRANSACTION_MESSAGES.PCON_AMOUNT_FAILED,
         stack: JSON.stringify(pconResponseForAmount.errors),
       })
-      throw new Error(`Unprocessable Entity: ${CONSTANTS.SAVE_TRANSACTION_MESSAGES.PCON_AMOUNT_FAILED}`);
+      const { status, stack } = pconResponseForAmount.errors[0];
+      throw { 
+        status, 
+        message: CONSTANTS.SAVE_TRANSACTION_MESSAGES.PCON_AMOUNT_FAILED,
+        stack: stack || pconResponseForAmount.errors[0].errors, 
+      } as unknown as Error
     }
 
     if (pconResponseForFee && pconResponseForFee?.errors.length !== 0) {
@@ -121,7 +124,12 @@ export const handler = async (
         error: CONSTANTS.SAVE_TRANSACTION_MESSAGES.PCON_FEE_FAILED,
         stack: JSON.stringify(pconResponseForFee.errors),
       })
-      throw new Error(`Unprocessable Entity: ${CONSTANTS.SAVE_TRANSACTION_MESSAGES.PCON_FEE_FAILED}`);
+      const { status, stack } = pconResponseForFee.errors[0];
+      throw { 
+        status, 
+        message: CONSTANTS.SAVE_TRANSACTION_MESSAGES.PCON_AMOUNT_FAILED,
+        stack: stack || pconResponseForFee.errors[0].errors, 
+      } as unknown as Error
     }
 
     const apiGatewayProxyResult =  {
@@ -143,16 +151,13 @@ export const handler = async (
   } catch (error) {
     logger.error('save-transaction', {
       step: 'error',
-      error: error.message
+      error: JSON.stringify(error),
     })
-    return {
-      statusCode: error.status || CONSTANTS.STATUS_CODE.INTERNAL_SERVER_ERROR,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return getErrorResponse(error);
   }
 };
 
-async function processTransaction(headers: IHeaders, transactionDetails: any) {
+async function processTransaction(headers: IHeaders, transactionDetails: IProcessTransaction) {
   logger.info('save-transaction', {
     step: 'process the transaction',
     params: {
@@ -172,80 +177,72 @@ async function processTransaction(headers: IHeaders, transactionDetails: any) {
     uuid,
   } = transactionDetails;
 
-  try {
-    const pconEncryptedHeaders = await getHeaderEncryptedForPCON(
-      headers,
-    );
+  const pconEncryptedHeaders = await getHeaderEncryptedForPCON(
+    headers,
+  );
 
-    logger.info('save-transaction', {
-      step: 'header encrypted',
-      pconEncryptedHeaders
-    });
+  logger.info('save-transaction', {
+    step: 'header encrypted',
+    pconEncryptedHeaders
+  });
 
-    const service = new MuniBiilingService()
-    const promiseResult = await Promise.allSettled([
-      // this is only used for to save the data on MB Node DB.
-      saveTransactionOnMunibilling(pconEncryptedHeaders, {
-        pcon_transaction_id,
-        customer_account_number,
-        company_muni_id,
-        channel_type: CONSTANTS.CHANNEL_TYPE.IVR,
-        trans_type,
-      }),
-      // This is used for to save data on MB paya DB (source of truth)
-      service.createNewRemoteCharges({
-        uuid,
-        customer_id: customer_id,
-        amount,
-        ...(customer_account_number
-          ? { account_number: customer_account_number }
-          : {}),
-        type_name: CONSTANTS.CHANNEL_TYPE.IVR,
-        status_name: CONSTANTS.PCON_SUCCESS_REASON_CODES.includes(
-          reason_code_id,
-        )
-          ? CONSTANTS.SAVE_TRANSACTION_MESSAGES.TRANSACTION_STATUS.SUCCESS
-          : CONSTANTS.SAVE_TRANSACTION_MESSAGES.TRANSACTION_STATUS.FAILED,
-      } as IcreateRemoteChanges),
-    ]);
+  const service = new MuniBiilingService()
+  const promiseResult = await Promise.allSettled([
+    // this is only used for to save the data on MB Node DB.
+    saveTransactionOnMunibilling(pconEncryptedHeaders, {
+      pcon_transaction_id,
+      customer_account_number,
+      company_muni_id,
+      channel_type: CONSTANTS.CHANNEL_TYPE.IVR,
+      trans_type,
+    }),
+    // This is used for to save data on MB paya DB (source of truth)
+    service.createNewRemoteCharges({
+      uuid,
+      customer_id: customer_id,
+      amount,
+      ...(customer_account_number
+        ? { account_number: customer_account_number }
+        : {}),
+      type_name: CONSTANTS.CHANNEL_TYPE.IVR,
+      status_name: CONSTANTS.PCON_SUCCESS_REASON_CODES.includes(
+        reason_code_id,
+      )
+        ? CONSTANTS.SAVE_TRANSACTION_MESSAGES.TRANSACTION_STATUS.SUCCESS
+        : CONSTANTS.SAVE_TRANSACTION_MESSAGES.TRANSACTION_STATUS.FAILED,
+    } as IcreateRemoteChanges),
+  ]);
 
-    const response = promiseResult.reduce(
-      (_prev: any, _curr: any, _index: number) => {
-        if (
-          _index === 0 &&
-          _curr.status === CONSTANTS.PROMISE_STATUS.FULFILLED
-        )
-          _prev.transactionId = _curr.value;
+  const response = promiseResult.reduce(
+    (_prev: any, _curr: any, _index: number) => {
+      if (
+        _index === 0 &&
+        _curr.status === CONSTANTS.PROMISE_STATUS.FULFILLED
+      )
+        _prev.transactionId = _curr.value;
 
-        if (_curr.status.toUpperCase() === CONSTANTS.PROMISE_STATUS.REJECTED)
-          _prev.errors.push(_curr.reason.response.data);
+      if (_curr.status.toUpperCase() === CONSTANTS.PROMISE_STATUS.REJECTED)
+        _prev.errors.push(_curr.reason.response.data);
 
-        return _prev;
-      },
-      {
-        transactionId: 0,
-        errors: [],
-      },
-    );
+      return _prev;
+    },
+    {
+      transactionId: 0,
+      errors: [],
+    },
+  );
+  
+  logger.info('save-transaction', {
+    step: 'end process transaction',
+    response
+  });
 
-    logger.info('save-transaction', {
-      step: 'end process transaction',
-      response
-    });
-
-    return response;
-  } catch (error) {
-    logger.error('save-transaction', {
-      step: 'error',
-      error: error.message
-    });
-    throw error;
-  }
+  return response;
 }
 
 async function saveTransactionOnMunibilling(
   pconEncryptedHeaders: string,
-  newTransaction: any,
+  newTransaction: IRecord,
 ) {
   logger.info('save-transaction', {
     step: 'save transaction in Node paya adapter'
@@ -272,7 +269,7 @@ async function saveTransactionOnMunibilling(
   return id;
 }
 
-async function getHeaderEncryptedForPCON(headers: any) {
+async function getHeaderEncryptedForPCON(headers: IHeaders) {
   logger.info('save-transaction', {
     step: 'initiate the header encryption process',
     headers

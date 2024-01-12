@@ -4,6 +4,7 @@ import {
 import { getLogger } from '../common/logger';
 import MuniBiilingService from '../common/muniBillingService';
 import { CONSTANTS } from '../common/constants'
+import { getErrorResponse } from '../common/errorFormatting'
 import { CustomAPIGatewayProxyEvent, IConvenienceFee, IConvenienceFeeResponse } from './types';
 import {
   getConvenienceFeeMapping,
@@ -43,52 +44,41 @@ export const handler = async (
   } catch (error) {
     logger.error('convenience-fee', {
       step: 'error',
-      error: error.message
+      error: JSON.stringify(error),
     })
-    return {
-      statusCode: error.status || CONSTANTS.STATUS_CODE.INTERNAL_SERVER_ERROR,
-      body: JSON.stringify({ error: error.message }),
-    };
+    return getErrorResponse(error);
   }
 };
 
 async function getConvenienceFee(amount: string, accountNumber: string) {
-  try {
-    logger.info('convenience-fee', {
-      step: 'initiate to fetch convenience fee',
-      params: {
-        amount,
-        accountNumber
-      }
-    })
-    const service = new MuniBiilingService();
-    const convenienceFees: [IConvenienceFee] = await service.getConvenienceFee(amount, accountNumber);
-    logger.info('convenience-fee', {
-      step: 'successfully fetched convenience fee',
-      convenienceFees
-    })
-    const response: IConvenienceFeeResponse =  await getConvenienceFeeMapping(convenienceFees);
-    logger.info('convenience-fee:', {
-      step: 'created final response',
-      mapResponse: response
-    })
+  logger.info('convenience-fee', {
+    step: 'initiate to fetch convenience fee',
+    params: {
+      amount,
+      accountNumber
+    }
+  })
+  const service = new MuniBiilingService();
+  const convenienceFees: [IConvenienceFee] = await service.getConvenienceFee(amount, accountNumber);
+  logger.info('convenience-fee', {
+    step: 'successfully fetched convenience fee',
+    convenienceFees
+  })
+  const response: Record<string, IConvenienceFeeResponse> =  await getConvenienceFeeMapping(convenienceFees);
+  logger.info('convenience-fee:', {
+    step: 'created final response',
+    mapResponse: response
+  })
 
-    const finalResponse =  {
-      status: CONSTANTS.STATUS_CODE.SUCCESS,
-      message: CONSTANTS.OK,
-      data: response
-    };
-    logger.info('convenience-fee:', {
-      step: 'end',
-      finalResponse
-    })
+  const finalResponse =  {
+    status: CONSTANTS.STATUS_CODE.SUCCESS,
+    message: CONSTANTS.OK,
+    data: response
+  };
+  logger.info('convenience-fee:', {
+    step: 'end',
+    finalResponse
+  })
 
-    return finalResponse;
-  } catch (error) {
-    logger.error('convenience-fee:', {
-      step: 'error',
-      error: error.message
-    })
-    throw new Error(error.message);
-  }
+  return finalResponse;
 }

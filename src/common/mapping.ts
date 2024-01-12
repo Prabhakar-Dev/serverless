@@ -8,6 +8,7 @@ import {
   IConvenienceFee,
 } from './types';
 import { CONSTANTS } from './constants';
+import { IConvenienceFeeResponse } from 'convenienceFee/types';
 
 export async function getMerchantMapping(merchant: IMerchantDTO, merchantCode: string) {
   const mappingPair = new MappingPair<IMerchantDTO, IMerchant>();
@@ -34,7 +35,7 @@ export async function getMerchantMapping(merchant: IMerchantDTO, merchantCode: s
   return mapper.map(mappingPair, merchant);
 }
 
-export async function getCustomerMapping(customerDetails: any, accountNumber: string) {
+export async function getCustomerMapping(customerDetails: ICustomerAccountDTO, accountNumber: string) {
   const mappingPair = new MappingPair<ICustomerAccountDTO, ICustomerAccount>();
 
   const configuration = new MapperConfiguration((cfg) => {
@@ -50,10 +51,10 @@ export async function getCustomerMapping(customerDetails: any, accountNumber: st
       storedPayments: (opt) =>
         opt.mapFrom((src) => {
           return {
-            accountVaultId: src.recurring_payment.account_vault_id || '',
-            paymentMethod: src.recurring_payment.recurring_payment_method || '',
-            lastFourDigit: src.recurring_payment.last_four_digits || '',
-            accountHolderName: src.recurring_payment.account_name || '',
+            accountVaultId: src?.recurring_payment?.account_vault_id || '',
+            paymentMethod: src?.recurring_payment?.recurring_payment_method || '',
+            lastFourDigit: src?.recurring_payment?.last_four_digits || '',
+            accountHolderName: src?.recurring_payment?.account_name || '',
           };
         }),
     });
@@ -97,7 +98,7 @@ export async function getConvenienceFeeMapping(
     return mappedPaymentMethod;
   };
 
-  const result: any = {};
+  const result: Record<string, IConvenienceFeeResponse> = {};
   convenienceFeeDetails.forEach((sourceData: IConvenienceFeeDTO) => {
     if (sourceData.payment_method) {
       const key = getPaymentMethod(sourceData.payment_method);

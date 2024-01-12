@@ -1,35 +1,27 @@
 import * as jwt from 'jsonwebtoken';
 import { CONSTANTS } from '../common/constants'
-import { getLogger } from 'common/logger';
+import { getLogger } from '../common/logger';
 import { CustomAPIGatewayProxyEvent } from './types';
-import { APIGatewaySimpleAuthorizerResult } from 'aws-lambda';
+import { APIGatewayAuthorizerResult } from 'aws-lambda';
 
 const logger = getLogger(__filename);
 
 // Environment Variables!
 const JWT_SECRET_KEY = process.env.JWT_SECRET || '';
 
-const verifyToken = async (token: string): Promise<Record<string, number | number | string | unknown>> => {
-  try {
+const verifyToken = async (token: string): Promise<Record<string, number | string | unknown>> => {
     const decoded = await jwt.verify(token, JWT_SECRET_KEY) as Record<string, number | string | unknown>;
     return decoded;
-  } catch (error) {
-    throw new Error(CONSTANTS.AUTHORIZATION_TOKEN_INVALID);
-  }
 };
 
-export const handler = async (event: CustomAPIGatewayProxyEvent): Promise<APIGatewaySimpleAuthorizerResult> => {
+export const handler = async (event: CustomAPIGatewayProxyEvent) => {
   try {
-    console.log('EVENT DATA', event)
-
-    // return { isAuthorized: true };
     logger.info('authorizer', {
       step: 'init',
       event: JSON.stringify(event),
     })
 
     const authorizationHeader = event.authorizationToken;
-    console.log('authorizationHeader:: ', authorizationHeader);
     
     if (!authorizationHeader) {
       logger.error('authorizer', {
@@ -38,7 +30,7 @@ export const handler = async (event: CustomAPIGatewayProxyEvent): Promise<APIGat
       })
       throw new Error(CONSTANTS.AUTHENTICATION_TOKEN_MISSING);
     }
-
+    
     const token = authorizationHeader.split(' ')[1];
     const decodedToken = await verifyToken(token);
 
@@ -54,29 +46,28 @@ export const handler = async (event: CustomAPIGatewayProxyEvent): Promise<APIGat
       step: 'end',
       decodedToken
     });
-    return generatePolicy(decodedToken.iat, 'Allow', event.methodArn);
+    return generatePolicy(`${decodedToken.iat}`, 'Allow', event.methodArn);
   } catch (error) {
     logger.error('authorizer', {
       step: 'error',
-      error: error.message
+      error: JSON.stringify(error),
     })
-    return { statusCode: 401, error: error.message, ...generatePolicy(0,'',''), };
+    return generatePolicy(`${event.requestId}`,'Deny', event.methodArn);
   }
 };
 
-
-
-const generatePolicy = (principalId: any , effect: string, resource: string) => {
-  const authResponse: any = {
+const generatePolicy = (principalId: string , effect: string, resource: string) => {
+  const authResponse: APIGatewayAuthorizerResult = {
       principalId,
       policyDocument: {
-          Statement: [
-              {
-                  Action: 'execute-api:Invoke',
-                  Effect: effect,
-                  Resource: resource,
-              },
-          ],
+        Statement: [
+          {
+            Action: 'execute-api:Invoke',
+            Effect: effect,
+            Resource: resource,
+          },
+        ],
+        Version: ''
       },
   };
   return authResponse;

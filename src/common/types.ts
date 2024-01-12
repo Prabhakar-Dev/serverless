@@ -1,21 +1,6 @@
-import VoiceResponse from "twilio/lib/twiml/VoiceResponse";
-
-export interface AchAPIGatewayProxyEvent {
-    readonly query: EventQueryStringParameters | null | undefined;
+export interface IRecord {
+  [key: string]: string | number | undefined
 }
-
-export interface EventQueryStringParameters {
-    [name: string]: string | undefined;
-}
-
-export interface TwilioGatherResquest {
-    attributes: VoiceResponse.SayAttributes;
-    message: string;
-}
-
-
-
-
 export interface IMerchantDTO {
     id: number;
     name: string;

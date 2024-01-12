@@ -1,0 +1,12 @@
+process.env.NODE_ENV = 'development'
+process.env.NODE_API_KEY = '123123123'
+process.env.NODE_API_PASS = '123123123'
+process.env.MB_BILLING_PAYA_API_HOST = 'https://connect.staging.munibilling.com:443/api'
+process.env.MB_BILLING_PAYA_API_NAMESPACE = 'v1'
+process.env.MB_BILLING_PAYA_API_LIFE_TOKEN = 'LkI1PKm0SAtdzyTssn622JoI08Tc5NpX0'
+process.env.MB_NODE_PAYA_API_HOST = 'http://localhost:5431/api/service'
+process.env.MB_NODE_PAYA_API_NAMESPACE = 'v1'
+process.env.MB_NODE_PAYA_API_LIFE_TOKEN = 'LkI1PKm0SAtdzyTssn622JoI08Tc5NpX0'
+process.env.JWT_SECRET = "secretKey"
+process.env.JWT_TOKEN_EXPIRY_IN_MINS = '15'
+process.env.AWS_LAMBDA_FUNCTION_VERSION = '1.0.0'
